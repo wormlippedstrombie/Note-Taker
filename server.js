@@ -43,10 +43,19 @@ app.post('/api/notes', (req, res) => {
 
 app.delete('/api/notes/:id', (req, res) => {
     const idToDelete = req.params.id;
-    const notes = JSON.parse(fs.readFileSync('db','db.json'));
-    const updatedNotes = notes.filter((note) => note.id !== idToDelete);
-    fs.writeFileSync('db','db.json', JSON.stringify(updatedNotes));
-    res.json({ message: 'Note deleted successfully' });
+    const dbPath = path.join(__dirname, 'db', 'db.json');
+    
+    fs.readFile(dbPath, 'utf8', (err, data) => {
+      if (err) throw err;
+  
+      const notes = JSON.parse(data);
+      const updatedNotes = notes.filter((note) => note.id !== idToDelete);
+  
+      fs.writeFile(dbPath, JSON.stringify(updatedNotes), (err) => {
+        if (err) throw err;
+        res.json({ message: 'Note deleted successfully' });
+      });
+    });
   });
 
 // Start the server
