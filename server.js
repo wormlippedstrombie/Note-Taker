@@ -6,13 +6,11 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware to parse JSON data
-app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Serve static assets (CSS, JavaScript)
+app.use(express.json());
 app.use(express.static('public'));
 
-// HTML routes
+// Routes
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -21,19 +19,26 @@ app.get('/notes', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'notes.html'));
 });
 
-// API routes
 app.get('/api/notes', (req, res) => {
-  const notes = JSON.parse(fs.readFileSync('db.json'));
-  res.json(notes);
+  fs.readFile(path.join(__dirname, 'db', 'db.json'), 'utf8', (err, data) => {
+    if (err) throw err;
+    const notes = JSON.parse(data);
+    res.json(notes);
+  });
 });
 
 app.post('/api/notes', (req, res) => {
-  const newNote = req.body;
-  const notes = JSON.parse(fs.readFileSync('db.json'));
-  newNote.id = Date.now().toString(); // Unique ID using timestamp
-  notes.push(newNote);
-  fs.writeFileSync('db.json', JSON.stringify(notes));
-  res.json(newNote);
+  fs.readFile(path.join(__dirname, 'db', 'db.json'), 'utf8', (err, data) => {
+    if (err) throw err;
+    const notes = JSON.parse(data);
+    const newNote = req.body;
+    newNote.id = Date.now().toString();
+    notes.push(newNote);
+    fs.writeFile(path.join(__dirname, 'db', 'db.json'), JSON.stringify(notes), (err) => {
+      if (err) throw err;
+      res.json(newNote);
+    });
+  });
 });
 
 // Start the server
