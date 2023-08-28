@@ -41,6 +41,14 @@ app.post('/api/notes', (req, res) => {
   });
 });
 
+app.delete('/api/notes/:id', (req, res) => {
+    const idToDelete = req.params.id;
+    const notes = JSON.parse(fs.readFileSync('db','db.json'));
+    const updatedNotes = notes.filter((note) => note.id !== idToDelete);
+    fs.writeFileSync('db','db.json', JSON.stringify(updatedNotes));
+    res.json({ message: 'Note deleted successfully' });
+  });
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is listening on PORT ${PORT}`);
